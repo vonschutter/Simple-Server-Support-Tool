@@ -12,6 +12,9 @@
 	- Show systems physical location 
 	- Check if a password you intend to use is for sale on the Darknet
 
+You may can run the script on any remote Linux server to manage some common support tasks. This tools should work on any deb or rpm based system or any system that uses package kit to satisfy dependencies and update the system. It uses standard tools available in Lnux and in common repositories tom manage the systems. 
+
+This tools is documentes as well as can be, and it should therefor, also serve as a good learning tool. It It may also easily be extended/modified to do whatever a sys admin would like it to. 
 ```
 Usage: run the script "bash /path/to/rtd" or if installed in the $PATH; by rtd simply type "rtd" in a terminal.
 ```
@@ -33,7 +36,7 @@ need to be run as a normal administrative user with access to "sudo" a.k.a. a me
 "sudoers" security group. This helps adhere to the best practice of NOT using a root interactive
 terminal. 
 
-
+```
 NOTE:	This terminal program is written to be readable and documented to a very high degree. The reason is that
 	these apps are seldom changed and when they are, it is usefull to be able to understand why and how 
 	things were built. Obviously, this becomes a useful learning tool as well; for all people that want to 
@@ -43,3 +46,4 @@ NOTE:	This terminal program is written to be readable and documented to a very h
 
 	As a general rule, we prefer using functions extensively because this makes it easier to manage the script
 	and facilitates several users working on the same scripts over time.
+```
