@@ -2,7 +2,8 @@
 
 ![RTD SSST](Media_files/3-info.png?raw=true "Main Window")
 
-The RTD Simple Server Support Tool #::	Purpose: To simplify support tasks 
+
+###	Purpose: To simplify support tasks 
 
 	- Display system information 
 	- Update system software
@@ -17,6 +18,12 @@ Usage: run the script "bash /path/to/rtd" or if installed in the $PATH; by rtd s
 
 
 ![RTD SSST Screenshot 2](Media_files/0-startup.png?raw=true "Executing the Script")
+
+: Validate an intended password to use : 
+![RTD SSST Screenshot 2](Media_files/7-pass.png?raw=true "Executing the Script")
+: Display results of password vulnerability : 
+![RTD SSST Screenshot 2](Media_files/8-pass.png?raw=true "Executing the Script")
+
 
 We must ensure that the script is run at the proper privileges and in a 
 re-attachable session. This means that this script will not allow itself to be run in 
