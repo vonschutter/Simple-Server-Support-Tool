@@ -1,6 +1,6 @@
 # Simple Server Support Tool
 
-![RTD SSST](Media_files/1-main_menu.png?raw=true "Main Window")
+![RTD SSST](Media_files/3-info.png?raw=true "Main Window")
 
 The RTD Simple Server Support Tool #::	Purpose: To simplify support tasks 
 
