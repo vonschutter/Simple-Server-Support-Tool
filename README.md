@@ -20,7 +20,7 @@ Usage: run the script "bash /path/to/rtd" or if installed in the $PATH; by rtd s
 ```
 
 
-![RTD SSST Screenshot 2](Media_files/10.png?raw=true "Executing the Script")
+![RTD SSST Screenshot 2](Media_files/11.png?raw=true "Executing the Script")
 
 : Validate an intended password to use : 
 ![RTD SSST Screenshot 2](Media_files/7-pass.png?raw=true "Executing the Script")
