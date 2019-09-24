@@ -21,10 +21,13 @@ Usage: run the script "bash /path/to/rtd" or if installed in the $PATH; by rtd s
 
 
 ![RTD SSST Screenshot 2](Media_files/10.png?raw=true "Executing the Script")
+Enter the administrative credentials once connected to the remote system and executed the "rtd" tool. You may see some text scrolling by, indicating that software is being installed from one of your distributions repositories. This is normal behavior: the first time the tool is run, it will install the detachable terminal functionality if it cannot find it. If this is the first time you use a given version of the tool you will see a notice to that affect. 
 
-: Validate an intended password to use : 
+### Validate an intended password to use : 
+This tool will allow you to "test" password you intend to use on your system. You may enter a password that you may want to use and the tool will check if it has been reported as "hacked" a.k.a. available for sale in places like the Darknet.  
 ![RTD SSST Screenshot 2](Media_files/7-pass.png?raw=true "Executing the Script")
-: Display results of password vulnerability : 
+### Display results of password vulnerability : 
+The result will be displayed as how many times the password in question has appeared in material for sale.  
 ![RTD SSST Screenshot 2](Media_files/8-pass.png?raw=true "Executing the Script")
 
 
