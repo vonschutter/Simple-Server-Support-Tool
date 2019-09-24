@@ -30,9 +30,17 @@ This tool will allow you to "test" passwords you intend to use on your system. Y
 The result will be displayed as how many times the password in question has appeared in material for sale.  
 ![RTD SSST Screenshot 2](Media_files/8-pass.png?raw=true "Passowrd result")
 
-### Update software and cleanup Personnal Package Archives (PPA's)
+### Update software and cleanup Personnal Package Archives (PPA's) :
 This functionality is useful for Ubuntnu based distributions (very common). If you are using a Debian system PPA's are not reccommended. 
-![RTD SSST Screenshot 2](Media_files/4-softw.png?raw=true "Executing the Script")
+![RTD SSST Screenshot 2](Media_files/4-softw.png?raw=true "Managing software")
+
+### Manage some basic admin tasks for Virtual Machines :
+With the simple support tool you can also list runnning VM's and back them up. 
+![RTD SSST Screenshot 2](Media_files/5-vm.png?raw=true "Managing VM")
+
+### Generate an auto install ISO file for the VM, or real system : 
+![RTD SSST Screenshot 2](Media_files/9-iso.png?raw=true "Managing ISO")
+To assist with building virtual machines, the simple server support tool also will create install media to be used when building a VM. You may, naturally, want to edit the option in the header of this tool to point it to your own preeseed (Debian/Ubuntu installation answer file) file. By default, however, this tool will generate an ISO file that will install to any VM (or most physical machines as well) with no user interactions what so ever. The ISO will install an Ubuntu/Kubuntu system in an encrypted disk with an easy standard password of (letmein/letmein1234): do please change this once you log in to your VM. 
 
 
 We must ensure that the script is run at the proper privileges and in a 
