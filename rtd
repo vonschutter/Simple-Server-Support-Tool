@@ -138,8 +138,9 @@ PUT_ISO_FILE_HERE_WHEN_DONE="$HOME"
 VOLUME_TITLE="RTD Ubuntu Auto Installer"
 PRESEED_TEMPLATE="https://github.com/vonschutter/Blind_Install/raw/master/custom/preseed.template"
 
-# Set location to where to log information
-LOGFILE="/var/log/$0.log"
+# Set location to where to log information: 
+# in the system log directory in a file named the same as this script.
+LOGFILE="/var/log/${0##*/}.log"
 
 
 
@@ -468,7 +469,7 @@ InstallSoftwareFromRepo () {
 	# Test if package name is installed, if not then...
 	if ! is_software_package_installed "$@"; then
 		if is_software_package_available   "$@"; then
-		echo -ne "--- Installing "$LINE" ":" "\ & $_INSTCMD "$@" >>$0.log 2>&1 && printf "%b%-6s%b [ \xE2\x9C\x94 ] $GREEN OK!$ENDCOLOR   \n" ||printf "%b%-6s%b [ ! ] $RED FAILED $ENDCOLOR  \n"
+		echo -ne "--- Installing "$LINE" ":" "\ & $_INSTCMD "$@" >>$LOGFILE.log 2>&1 && printf "%b%-6s%b [ \xE2\x9C\x94 ] $GREEN OK!$ENDCOLOR   \n" ||printf "%b%-6s%b [ ! ] $RED FAILED $ENDCOLOR  \n"
 		else
 		echo -ne "--- Installing "$LINE" ":" "\ && printf "%b%-6s%b [ \xE2\x9C\x94 ] $YELLOW Not available $ENDCOLOR \n"
 		fi
@@ -516,7 +517,8 @@ rtd_update_system () {
         # System update function. The purpose of this function is to update installed software from 
 	# distribution reopositories and the newer self contained universal software stores like 
         # snap and flatpak. 
-
+	LOGFILE="${LOGFILE:=$0}"
+	
 
         echo -e $GREEN"$PUBLICATION: Version $VERSION" $ENDCOLOR
         echo -e $GREEN"------------------------------------------------" $ENDCOLOR
@@ -530,7 +532,7 @@ rtd_update_system () {
         log_item ()
         {
                 DATE=$(date '+%d/%m/%Y %H:%M:%S');
-                echo "$DATE --- : $@" >> $_LOGFILE
+                echo "$DATE --- : $@" >> $LOGFILE
         }
 
         deb_software_task ()
@@ -539,7 +541,7 @@ rtd_update_system () {
                 # make some decent display terminal graphics...
                 PAD="------------------------------------------"
                 LINE=$(printf "%s %s" "$@" "$PAD" | cut -c 1-${#PAD})
-                echo -ne "--- Executing "$LINE"":""\ & $@ >>$_LOGFILE 2>&1 && printf "%b%-6s%b [ \xE2\x9C\x94 ] $GREEN OK!$ENDCOLOR   \n" ||printf "%b%-6s%b [ ! ] $RED FAILED $ENDCOLOR  \n"
+                echo -ne "--- Executing "$LINE"":""\ & $@ >>$LOGFILE 2>&1 && printf "%b%-6s%b [ \xE2\x9C\x94 ] $GREEN OK!$ENDCOLOR   \n" ||printf "%b%-6s%b [ ! ] $RED FAILED $ENDCOLOR  \n"
         }
         # Update native software packages; since it is not known what distribution 
 	# this script is being executed on, it is best to check and see if we are able 
@@ -549,12 +551,12 @@ rtd_update_system () {
 	if hash pkcon 2>/dev/null; then
 		# If package kit is available then prefer this
 		echo -e $YELLOW "Setting install options for Package Kit" $ENDCOLOR
-		pkcon -y update 2>> $_LOGFILE
+		pkcon -y update 2>> $LOGFILE
 		#| whiptail --gauge "Updating native packages..." 6 50 0
 	elif hash yum 2>/dev/null; then
 		# If package kit is not available try yum (RedHat, Cent OS, Fedora)
 		echo -e $YELLOW "Setting install options for YUM" $ENDCOLOR
-		deb_software_task yum -y upgrade 2>> $_LOGFILE
+		deb_software_task yum -y upgrade 2>> $LOGFILE
 	elif hash apt 2>/dev/null; then
 		# If package kit is not available try apt (Debian, Ubuntu, and all derivatives)
 		echo -e $YELLOW "Setting install options for DEB" $ENDCOLOR
@@ -564,7 +566,7 @@ rtd_update_system () {
 	elif hash zypper 2>/dev/null; then
 		# If package kit is not available try zypper (Open SUSE)
 		echo -e $YELLOW "Setting install options for ZYPPER" $ENDCOLOR
-		deb_software_task zypper up -y 2>> $_LOGFILE
+		deb_software_task zypper up -y 2>> $LOGFILE
 	else
 		echo -e $YELLOW "This system does not seem to have a software managment system" $ENDCOLOR
 		exit 1
@@ -572,7 +574,7 @@ rtd_update_system () {
 
         # updating snaps if snap is present on the system... 
         if hash snap 2>/dev/null; then
-                snap refresh 2>> $_LOGFILE
+                snap refresh 2>> $LOGFILE
 		#| whiptail --gauge "Updating snap packages..." 6 50 0
         else 
                 echo "--- snap software is not present on this system... skipping..."
@@ -580,7 +582,7 @@ rtd_update_system () {
 
         # updating flatpacks if flatpack is present on system... 	
         if hash flatpak 2>/dev/null; then
-                flatpak update -y 2>> $_LOGFILE
+                flatpak update -y 2>> $LOGFILE
 		#| whiptail --gauge "Updating flapak packages..." 6 50 0
         else 
                 echo "--- flatpak software is not present on this system... skipping..."
