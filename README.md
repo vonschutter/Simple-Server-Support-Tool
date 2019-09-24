@@ -7,14 +7,14 @@
 
 	- Display system information 
 	- Update system software
-	- Bakup virtual machines 
+	- Backup virtual machines 
 	- Cleanup/Report on PPA's
 	- Show systems physical location 
 	- Check if a password you intend to use is for sale on the Darknet
 
-You may can run the script on any remote Linux server to manage some common support tasks. This tools should work on any deb or rpm based system or any system that uses package kit to satisfy dependencies and update the system. It uses standard tools available in Lnux and in common repositories tom manage the systems. 
+You may can run the script on any remote Linux server to manage some common support tasks. This tools should work on any deb or rpm based system or any system that uses package kit to satisfy dependencies and update the system. It uses standard tools available in Lnux and in common repositories to manage the systems. 
 
-This tools is documentes as well as can be, and it should therefor, also serve as a good learning tool. It It may also easily be extended/modified to do whatever a sys admin would like it to. 
+This tool is documente as well as can be, and it should therefore, also serve as a good learning tool. It It may also easily be extended/modified to do whatever a sysadmin would like it to since it contains menu templates and is written in a moduar way. 
 ```
 Usage: run the script "bash /path/to/rtd" or if installed in the $PATH; by rtd simply type "rtd" in a terminal.
 ```
@@ -24,11 +24,15 @@ Usage: run the script "bash /path/to/rtd" or if installed in the $PATH; by rtd s
 Enter the administrative credentials once connected to the remote system and executed the "rtd" tool. You may see some text scrolling by, indicating that software is being installed from one of your distributions repositories. This is normal behavior: the first time the tool is run, it will install the detachable terminal functionality if it cannot find it. If this is the first time you use a given version of the tool you will see a notice to that affect. 
 
 ### Validate an intended password to use : 
-This tool will allow you to "test" password you intend to use on your system. You may enter a password that you may want to use and the tool will check if it has been reported as "hacked" a.k.a. available for sale in places like the Darknet.  
-![RTD SSST Screenshot 2](Media_files/7-pass.png?raw=true "Executing the Script")
+This tool will allow you to "test" passwords you intend to use on your system. You may enter a password that you may want to use and the tool will check if it has been reported as "hacked" a.k.a. available for sale in places like the Darknet.  
+![RTD SSST Screenshot 2](Media_files/7-pass.png?raw=true "Testing passwords")
 ### Display results of password vulnerability : 
 The result will be displayed as how many times the password in question has appeared in material for sale.  
-![RTD SSST Screenshot 2](Media_files/8-pass.png?raw=true "Executing the Script")
+![RTD SSST Screenshot 2](Media_files/8-pass.png?raw=true "Passowrd result")
+
+### Update software and cleanup Personnal Package Archives (PPA's)
+This functionality is useful for Ubuntnu based distributions (very common). If you are using a Debian system PPA's are not reccommended. 
+![RTD SSST Screenshot 2](Media_files/4-softw.png?raw=true "Executing the Script")
 
 
 We must ensure that the script is run at the proper privileges and in a 
