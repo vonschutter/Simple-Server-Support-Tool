@@ -402,7 +402,7 @@ set_install_command () {
 	# If you need to use this script in an rpm based system you could modify the install
 	# command here to suit dnf, yum, zypper... By default packages of patternd that do not
 	# match should be skipped. Use "export option" so child processes also see the variiables.
-	if [[ 'echo $OSTYPE" |grep "linux"' ]]; then
+	if [[ 'echo $OSTYPE |grep "linux"' ]]; then
 		if hash pkcon 2>/dev/null; then
 			# If package kit is available then prefer this
 			echo -e $YELLOW "Setting install options for Package Kit" $ENDCOLOR	 
