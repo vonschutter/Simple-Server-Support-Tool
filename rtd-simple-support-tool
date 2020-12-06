@@ -1795,54 +1795,59 @@ rtd_oem_cfg_post_task_sequence_default ()
 		# step 2 inst the OEM load process is optimally able to run 
 		# on several distributions. 
 
-		echo "Configuring LightDM....."
+
 		if [[ -f /etc/lightdm/lightdm.conf ]]; then 
 			cp /etc/lightdm/lightdm.conf /etc/lightdm/lightdm.conf.rtd-bak
+
+			cat << OEM_LXDM_LOGIN_OPTION > /etc/lightdm/lightdm.conf
+			# This configuration file was created by RTD Setup.
+			# You may safely replace this file with the original backed up: 
+			# /etc/lightdm/lightdm.conf.rtd-bak
+			# If this file is not there, then it wa not there to begin with
+			# and you can delete this file. 
+			[SeatDefaults]
+			autologin-user=$_OEM_USER
+			autologin-user-timeout=0
+			OEM_LXDM_LOGIN_OPTION
+
 		fi
 
-	cat << OEM_LXDM_LOGIN_OPTION > /etc/lightdm/lightdm.conf
-	# This configuration file was created by RTD Setup.
-	# You may safely replace this file with the original backed up: 
-	# /etc/lightdm/lightdm.conf.rtd-bak
-	# If this file is not there, then it wa not there to begin with
-	# and you can delete this file. 
-	[SeatDefaults]
-	autologin-user=$_OEM_USER
-	autologin-user-timeout=0
-	OEM_LXDM_LOGIN_OPTION
 
-		echo "Configuring SDDM...."
 		if [[ -f /etc/sddm.conf ]]; then 
 			cp /etc/sddm.conf /etc/sddm.conf.rtd-bak
+
+			cat << OEM_SDDM_LOGIN_OPTION > /etc/sddm.conf
+			# This configuration file was created by RTD Setup.
+			# You may safely replace this file with the original backed up: 
+			# /etc/sddm.conf.rtd-bak
+			# If this file is not there, then it wa not there to begin with
+			# and you can delete this file. 
+			[Autologin]
+			User=$_OEM_USER
+			Session=plasma.desktop
+			OEM_SDDM_LOGIN_OPTION
+
 		fi
 
-	cat << OEM_SDDM_LOGIN_OPTION > /etc/sddm.conf
-	# This configuration file was created by RTD Setup.
-	# You may safely replace this file with the original backed up: 
-	# /etc/sddm.conf.rtd-bak
-	# If this file is not there, then it wa not there to begin with
-	# and you can delete this file. 
-	[Autologin]
-	User=$_OEM_USER
-	Session=plasma.desktop
-	OEM_SDDM_LOGIN_OPTION
 
-		echo "Configuring GDM...."
 		if [[ -f /etc/gdm3/daemon.conf ]]; then 
 			cp /etc/gdm3/daemon.conf /etc/gdm3/daemon.conf.rtd-bak
+
+			cat << OEM_GDM3_LOGIN_OPTION > /etc/gdm3/daemon.conf
+			# This configuration file was created by RTD Setup.
+			# You may safely replace this file with the original backed up: 
+			# /etc/gdm3/daemon.conf.rtd-bak
+			# If this file is not there, then it wa not there to begin with
+			# and you can delete this file. 
+			[daemon]
+			AutomaticLoginEnable=True
+			AutomaticLogin=$_OEM_USER
+			WaylandEnable=false
+			OEM_GDM3_LOGIN_OPTION
+
 		fi
 
-	cat << OEM_GDM3_LOGIN_OPTION > /etc/gdm3/daemon.conf
-	# This configuration file was created by RTD Setup.
-	# You may safely replace this file with the original backed up: 
-	# /etc/gdm3/daemon.conf.rtd-bak
-	# If this file is not there, then it wa not there to begin with
-	# and you can delete this file. 
-	[daemon]
-	AutomaticLoginEnable=True
-	AutomaticLogin=$_OEM_USER
-	WaylandEnable=false
-	OEM_GDM3_LOGIN_OPTION
+
 
 	}
 
