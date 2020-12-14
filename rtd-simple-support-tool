@@ -724,7 +724,6 @@ make_kvm_virtual_machine_now_from_debian_org () {
 		--vcpus "${2:-2}" \
 		--memory "${3:-2048}" \
 		--network "$VIRT_NET" \
-		#--video virtio \
 		--location=http://ftp.us.debian.org/debian/dists/buster/main/installer-amd64/  \
 		--disk size="${4:-20}" \
 		--os-variant="${1:-debian10}" \
