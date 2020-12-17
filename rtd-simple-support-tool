@@ -137,7 +137,7 @@ BLUE="\033[1;34m"
 # Valid choices are: "dialog", "whiptail".
 RTD_GUI=
 export NEWT_COLORS='root=,gray '
-DIALOG_COLORS=WHITE,BLUE,ON
+# DIALOG_COLORS=WHITE,BLUE,ON
 
 # Details for the ISO image creator. To change from one Ubuntu release to another you
 # may change the "RELEASE" option. If you wold like to use the ISO maker to build a custom
@@ -181,7 +181,7 @@ rtd_oem_ensure_rtd_library_available ()
 		if ( $RTD_GUI --keep-window --title "RTD: Get Parts" --yesno "For this tool to run correctly I need to download the RunTime Data Library file from the internet. Is this OK?" 10 90 ); then
 			mkdir -p /opt/rtd/scripts
 			wget -q https://github.com/vonschutter/RTD-Build/raw/master/System_Setup/_rtd_library -P /opt/rtd/scripts/
-			source "$rtd_library" || $RTD_GUI --colors --title "\Zb\Z1 ERROR!" --pause  "Failed to download Library! PLEASE check that you are connected to the internet." 10 90 10
+			source $rtd_library || $RTD_GUI --colors --title "\Zb\Z1 ERROR!" --pause  "Failed to download Library! PLEASE check that you are connected to the internet." 10 90 10
 			rtd_oem_pause $?
 		else
 			if ( $RTD_GUI --title "RTD: Get Parts" --no-label "EXIT" --yes-label "Go back" --yesno "Since you have dissalowed me to get the RunTime Data Library, I cannot continue. \n Press [ENTER] to quit" 10 90 ); then
@@ -193,7 +193,7 @@ rtd_oem_ensure_rtd_library_available ()
 	}
 
 	if [ -f $rtd_library ]; then
-		if [[ "$(head $rtd_library |grep Version: | cut -f 3)" > "2" ]]; then 
+		if [[ "$(head $rtd_library |grep Version: | cut -f 3)" > 2 ]]; then 
 			source $rtd_library
 			rtd_oem_pause $?
 		else 
@@ -249,7 +249,7 @@ check_if_password_p0wned () {
 	pass_str=$($RTD_GUI --passwordbox "Please enter your intended password to validate your new password against P0wned DB" 8 78 --title "" 3>&1 1>&2 2>&3)
 	result=$(
 		sha1=$(echo -n $pass_str | tr -d '\n' | sha1sum); echo "Hash prefix: ${sha1:0:5}"; echo "Hash suffix: ${sha1:5:35}";
-		query_result=$(curl https://api.pwnedpasswords.com/range/${sha1:0:5} 2>/dev/null | grep $(echo ${sha1:5:35} | tr '[:lower:]' '[:upper:]'));
+		query_result=$(curl https://api.pwnedpasswords.com/range/${sha1:0:5} 2>/dev/null | grep "$(echo "${sha1:5:35}" | tr '[:lower:]' '[:upper:]')");
 		printf "Your password appeared %d times for sale in the Darknet per the P0wned online database...." "${query_result#*:}" 2>/dev/null ;
 		unset pass_str ;
 		)
@@ -274,8 +274,8 @@ change_disk_pass ()
 	# It will offer to change the first encrypted volume found by blockid.
 	# It is unclear how this will work if there are multiple encrypted volumes found.
 	clear
-	echo -e $RED"Changing the disk encryption password for your hard drive:"$ENDCOLOR
-	cryptsetup luksChangeKey $(blkid | grep crypto_LUKS|  cut -d : -f 1)
+	echo -e "$RED""Changing the disk encryption password for your hard drive:""$ENDCOLOR"
+	cryptsetup luksChangeKey "$(blkid | grep crypto_LUKS|  cut -d : -f 1)"
 	read -p "Press  [ ENTER ] to continue:"
 }
 
@@ -408,7 +408,7 @@ prepare_environment_for_iso_creation ()
 		$PUT_ISO_FILE_HERE_WHEN_DONE\
 		$PERMANENT_DOWNLOAD_DIR
 	do
-		mkdir -p -m 770 "$i" && chown $SUDO_USER:$SUDO_USER "$i"
+		mkdir -p "$i" && chown "$SUDO_USER":"$SUDO_USER" "$i"
 	done
 }
 
@@ -427,7 +427,7 @@ rtd_oem_ubuntu_auto_install_iso_builder()
 	prepare_environment_for_iso_creation
 
 	# Retreive list of available Ubuntu versions:
-	all=($(wget -O- releases.ubuntu.com -q | perl -ne '/Ubuntu (\d+.\d+.\d+)/ && print "$1\n"' | sort -Vu))
+	all=$(wget -O- releases.ubuntu.com -q | perl -ne '/Ubuntu (\d+.\d+.\d+)/ && print "$1\n"' | sort -Vu)
 
 	# Ask for desired version to use:
 	UBUNTU_VER=$($RTD_GUI \
@@ -448,7 +448,7 @@ rtd_oem_ubuntu_auto_install_iso_builder()
 	iso=$(find "$PERMANENT_DOWNLOAD_DIR" -name "$ISO_FILENAME")
 	if [ ! -e "$iso" ]; then
 		echo "$ISO_FILENAME is not in cache, downloading..."
-		wget -nc $ISO_URL -P "$PERMANENT_DOWNLOAD_DIR" || read -p "Failure"
+		wget -nc $ISO_URL -P "$PERMANENT_DOWNLOAD_DIR" || read -p "Failure to download ISO file"
 		iso="$PERMANENT_DOWNLOAD_DIR/$ISO_FILENAME"
 	fi
 
@@ -659,7 +659,7 @@ create_iso_image ()
 		rm -f "$TARGET_ISO"
 	fi
 
-	cd "$TMP_DISC_DIR"
+	cd "$TMP_DISC_DIR" || echo "failed to enter $TMP_DISC_DIR "
 	rm -r '[BOOT]'
 	"$BIN_XORRISO" -as mkisofs -r -V "$VOLUME_TITLE" -J -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -input-charset utf-8 -isohybrid-mbr "$ISOHDPFX_BIN" -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot -isohybrid-gpt-basdat -o "$TARGET_ISO" ./
 	chmod 777 "$TARGET_ISO" || read -p "An error may have occurred (review above outout) then: Press [ENTER] to continue:"
@@ -675,7 +675,7 @@ create_iso_image_debian ()
 		rm -f "$TARGET_ISO"
 	fi
 
-	cd "$TMP_DISC_DIR"
+	cd "$TMP_DISC_DIR" || echo "Failed to enter $TMP_DISC_DIR"
 	rm -r '[BOOT]'
 	"$BIN_XORRISO" -as mkisofs -r -V "$VOLUME_TITLE" -J -b "isolinux/isolinux.bin" -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -input-charset utf-8 -isohybrid-mbr "$ISOHDPFX_BIN" -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot -isohybrid-gpt-basdat -o "$TARGET_ISO" ./
 	chmod 777 "$TARGET_ISO" || read -p "An error may have occurred (review above outout) then: Press [ENTER] to continue:"
@@ -736,6 +736,51 @@ make_kvm_virtual_machine_now_from_debian_org () {
 }
 
 
+make_kvm_virtual_machine_now_from_ubuntu_com () {
+	# Function to create a KVM virtual michine disk and define a VM. This function should be
+	# used on a Qemu/KVM virtual host that the virtual guest is to be used on.
+	# NOTE: QCOW2 is a storage format for virtual .
+	# machine disk images QCOW stands for QEMU copy on write. The QCOW2 format decouples the physical storage
+	# layer from the virtual layer by adding a mapping between logical and physical blocks.
+	# NOTE2: Kernel-based Virtual Machine (KVM) is an open source virtualization technology built into Linux®.
+	# Specifically, KVM lets you turn Linux into a hypervisor that allows a host machine to run multiple,
+	# isolated virtual environments called guests or virtual machines (VMs). KVM is part of Linux.
+	# For complete info: https://www.redhat.com/en/topics/virtualization/what-is-KVM
+	# set -e
+	# Use the check_dependencies function to make sure the needed software is available.
+	# Usage: Either simply call this function to use the defaults or:
+	# Call this function with "function" "RAM_SIZE" "DISK_SIZE" "DISK_FORMAT" "DISK_FILE"
+	# Omitting any of the arguments will us the default instead.
+
+	for i in qemu-utils qemu-tools qemu-kvm qemu-system-x86
+	do
+		check_dependencies $i 
+	done
+
+	# Lookup specific binaries: use full path since they may just have been added and not in $PATH yet.
+	: "${BIN_VIRT_INSTALL:=$(type -p virt-install)}"
+
+	# Discover if the appropriate VM net interface is (default or br'0 - n')
+	VIRT_NET="$(if ls /sys/class/net |grep br |grep -v virbr >/dev/null; then echo "bridge:$(ls /sys/class/net)" |grep br ; else echo default;fi)"
+ 
+	# create image and run installer
+	"${BIN_VIRT_INSTALL}" --name VDI_Ubuntu_"$CONFIG"_"$RANDOM" \
+		--vcpus "${2:-2}" \
+		--memory "${3:-2048}" \
+		--network "$VIRT_NET" \
+		--disk size="${4:-20}" \
+		--os-variant="${1:-debian10}" \
+		--location=http://us.archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/ \
+		--initrd-inject="$PRESEED_FILE" \
+		--initrd-inject="$TASK_FILE" \
+		--extra-args "ks=file:/$(basename $PRESEED_FILE)" \
+		--noautoconsole || read -p "An ERROR has occurred. Please press [ENTER] to continue..."
+		#"$RTD_GUI" --backtitle "$BRANDING" --title "NOTICE!" --msgbox "ERROR: -- Building VM using $PRESEED_FILE and internal instruction: ks=file:/$(basename $PRESEED_FILE) Options given were: $1 $2 $3 $4" 10 60
+		#
+	$RTD_GUI --backtitle "$BRANDING" --title "NOTICE!" --msgbox "The virtual machine is currently being built. You may attach to this server and see the progress at IP: $(hostname -I))" 10 60
+}
+
+
 make_kvm_virtual_machine_now_from_iso () {
 	# Function to create a KVM virtual michine disk and define a VM. This function should be
 	# used on a Qemu/KVM virtual host that the virtual guest is to be used on.
@@ -781,26 +826,26 @@ set_install_command ()
 	# If you need to use this script in an rpm based system you could modify the install
 	# command here to suit dnf, yum, zypper... By default packages of patternd that do not
 	# match should be skipped. Use "export option" so child processes also see the variiables.
-	if [[ 'echo $OSTYPE" |grep "linux"' ]]; then
+	if echo "$OSTYPE" |grep -q "linux" ; then
 		if hash pkcon 2>/dev/null; then
 			# If package kit is available then prefer this
-			echo -e $YELLOW "Setting install options for Package Kit" $ENDCOLOR
+			echo -e "$YELLOW Setting install options for Package Kit $ENDCOLOR"
 			export _INSTCMD="pkcon -y  install"
 		elif hash yum 2>/dev/null; then
 			# If package kit is not available try yum (RedHat, Cent OS, Fedora)
-			echo -e $YELLOW "Setting install options for YUM" $ENDCOLOR
+			echo -e "$YELLOW" "Setting install options for YUM" "$ENDCOLOR"
 			export _INSTCMD="yum -y  install"
 		elif hash apt 2>/dev/null; then
 			# If package kit is not available try apt (Debian, Ubuntu, and all derivatives)
-			echo -e $YELLOW "Setting install options for DEB" $ENDCOLOR
+			echo -e "$YELLOW" "Setting install options for DEB" "$ENDCOLOR"
 			export _INSTCMD="apt-get -y -qq --allow-change-held-packages --ignore-missing install"
 			export DEBIAN_FRONTEND=noninteractive
 		elif hash zypper 2>/dev/null; then
 			# If package kit is not available try zypper (Open SUSE)
-			echo -e $YELLOW "Setting install options for ZYPPER" $ENDCOLOR
+			echo -e "$YELLOW" "Setting install options for ZYPPER" "$ENDCOLOR"
 			export _INSTCMD="zypper install -y "
 		else
-			echo -e $YELLOW "This system does not seem to have a software managment system" $ENDCOLOR
+			echo -e "$YELLOW" "This system does not seem to have a software managment system" "$ENDCOLOR"
 			exit 1
 		fi
 
@@ -854,7 +899,7 @@ is_software_package_available () {
 	elif hash apt 2>/dev/null; then
 		apt -qq list "$1" 2>/dev/null | grep -q "$1" && return 0 || return 1
 	elif hash zypper 2>/dev/null; then
-		return zypper info "$1" &> /dev/null && return 0 || return 1
+		zypper info "$1" &> /dev/null && return 0 || return 1
 	else
 		return 3
 	fi
@@ -879,14 +924,13 @@ InstallSoftwareFromRepo () {
 	# Test if package name is installed, if not then...
 	if ! is_software_package_installed "$@"; then
 		if is_software_package_available   "$@"; then
-		echo -ne "--- Installing "$LINE" ":" "\ & $_INSTCMD "$@" >>$LOGFILE.log 2>&1 && printf "%b%-6s%b [ \xE2\x9C\x94 ] $GREEN OK!$ENDCOLOR   \n" ||printf "%b%-6s%b [ ! ] $RED FAILED $ENDCOLOR  \n"
+		echo -ne "--- Installing ""$LINE"":" \ & $_INSTCMD "$@" >>"$LOGFILE.log" 2>&1 && printf "%b%-6s%b [ \xE2\x9C\x94 ] $GREEN OK!$ENDCOLOR   \n" ||printf "%b%-6s%b [ ! ] $RED FAILED $ENDCOLOR  \n"
 		else
-		echo -ne "--- Installing "$LINE" ":" "\ && printf "%b%-6s%b [ \xE2\x9C\x94 ] $YELLOW Not available $ENDCOLOR \n"
+		echo -ne "--- Installing ""$LINE"":" \ && printf "%b%-6s%b [ \xE2\x9C\x94 ] $YELLOW Not available $ENDCOLOR \n"
 		fi
 	else
-		echo -ne "--- Installing "$LINE" ":" "\ && printf "%b%-6s%b [ \xE2\x9C\x94 ] $YELLOW Already installed $ENDCOLOR \n"
+		echo -ne "--- Installing ""$LINE"":" \ && printf "%b%-6s%b [ \xE2\x9C\x94 ] $YELLOW Already installed $ENDCOLOR \n"
 	fi
-
 }
 
 
@@ -967,12 +1011,21 @@ err_no_menu_system_found () {
 
 
 rtd_update_system () {
-	PUBLICATION="$BRANDING Update Manager for Linux"
-	VERSION="1.13 (built in)"
 	# System update function. The purpose of this function is to update installed software from
 	# distribution reopositories and the newer self contained universal software stores like
-	# snap and flatpak.
-	LOGFILE="${LOGFILE:=$0}"
+	# snap and flatpak. 
+	# Function does not expect any argument. However it will respect one argument \"simple\"
+	# The simple argument instructs this functions [pkcon] action to display simple output
+	# rather than more user friendly output. 
+	# Update native software packages; since it is not known what distribution
+	# this script is being executed on, it is best to check and see if we are able
+	# to perform an update and then do the update...
+	# One could choose to check for a supported exact version: e.g. Ubuntu, but we would
+	# like to be nice and add value for as many as we can. Specially if it is this easy! :)
+	PUBLICATION="$BRANDING Update Manager for Linux"
+	VERSION="1.13 (built in)"
+
+	LOGFILE="${LOGFILE:-$0.log}"
 
 
 	echo -e $GREEN"$PUBLICATION: Version $VERSION" $ENDCOLOR
@@ -980,36 +1033,32 @@ rtd_update_system () {
 
 	echo I am updating software from all channels i can find on the system.
 	echo I will update via the native package manager as well as newer formats
-	echo -e "like $YELLOW"snap"$ENDCOLOR and $YELLOW"flatpak"$ENDCOLOR..."
+	echo -e "like $YELLOW snap $ENDCOLOR and $YELLOW flatpak $ENDCOLOR..."
 	echo " "
 
 
 	log_item ()
 	{
 		DATE=$(date '+%d/%m/%Y %H:%M:%S');
-		echo "$DATE --- : $@" >> $LOGFILE
+		echo "$DATE --- : $*" >> "$LOGFILE"
 	}
 
 
         rtd_software_task ()
         {
-		log_item "running rtd_software_task with parameters $@"
+		log_item "running rtd_software_task with parameters $*"
 		# make some decent display terminal graphics...
 		PAD="------------------------------------------"
 		LINE=$(printf "%s %s" "$@" "$PAD" | cut -c 1-${#PAD})
-		echo -ne "--- Executing "$LINE"":""\ & $@ >>$LOGFILE 2>&1 && printf "%b%-6s%b [ \xE2\x9C\x94 ] $GREEN OK!$ENDCOLOR   \n" ||printf "%b%-6s%b [ ! ] $RED FAILED $ENDCOLOR  \n"
+		echo -ne "--- Executing $LINE:"\ & "$@" >>"$LOGFILE" 2>&1 && printf "%b%-6s%b [ \xE2\x9C\x94 ] $GREEN OK!$ENDCOLOR   \n" ||printf "%b%-6s%b [ ! ] $RED FAILED $ENDCOLOR  \n"
         }
-        # Update native software packages; since it is not known what distribution
-	# this script is being executed on, it is best to check and see if we are able
-	# to perform an update and then do the update...
-	# One could choose to check for a supported exact version: e.g. Ubuntu, but we would
-	# like to be nice and add value for as many as we can. Specially if it is this easy! :)
+
 	if hash pkcon 2>/dev/null; then
 		# If package kit is available then prefer this
+		if [[ $1 == simple ]]; then disp_option="--plain" ; fi
 		echo -e $YELLOW "Using: Package Kit" $ENDCOLOR
-		pkcon -y refresh 2>> $LOGFILE
-		pkcon -y update --autoremove 2>> $LOGFILE
-		#| $RTD_GUI --gauge "Updating native packages..." 6 50 0
+		pkcon -y refresh $disp_option 2>> $LOGFILE
+		pkcon -y update --autoremove $disp_option 2>> $LOGFILE
 	elif hash yum 2>/dev/null; then
 		# If package kit is not available try yum (RedHat, Cent OS, Fedora)
 		echo -e $YELLOW "Using: YUM" $ENDCOLOR
@@ -1029,21 +1078,19 @@ rtd_update_system () {
 		exit 1
 	fi
 
-        # updating snaps if snap is present on the system...
-        if hash snap 2>/dev/null; then
-                snap refresh 2>> $LOGFILE
-		#| $RTD_GUI --gauge "Updating snap packages..." 6 50 0
-        else
-                echo "--- snap software is not present on this system... skipping..."
-        fi
+	# updating snaps if snap is present on the system...
+	if hash snap 2>/dev/null; then
+		snap refresh 2>> $LOGFILE
+	else
+		echo "--- snap software is not present on this system... skipping..."
+	fi
 
-        # updating flatpacks if flatpack is present on system...
-        if hash flatpak 2>/dev/null; then
-                flatpak update -y 2>> $LOGFILE
-		#| $RTD_GUI --gauge "Updating flapak packages..." 6 50 0
-        else
-                echo "--- flatpak software is not present on this system... skipping..."
-        fi
+	# updating flatpacks if flatpack is present on system...
+	if hash flatpak 2>/dev/null; then
+		flatpak update -y 2>> $LOGFILE
+	else
+		echo "--- flatpak software is not present on this system... skipping..."
+	fi
 }
 
 
@@ -1060,8 +1107,8 @@ backup_running_vm ()
 		# To exclude a VM (domain), add "nobackup" to its name and it will be ignored.
 		# To rename: shutdown the guest, then use this command: virsh domrename "oldname" "newname".
 
-		DATE=`date +%Y-%m-%d.%H:%M:%S`
-		LOG=="/var/log/kvm-backup.$DATE.LOG"
+		DATE=$(date +%Y-%m-%d.%H:%M:%S)
+		LOG="/var/log/kvm-backup.$DATE.LOG"
 		BACKUPROOT=${VM_BACKUP_TARGET:=/mnt/vmdsk/VM_BACKUP}
 
 		#Get list of all running virtual machines
@@ -1076,46 +1123,45 @@ backup_running_vm ()
 				exit 1
 			fi
 
-			VMSTATE=`virsh list --all | grep $DOMAIN | awk '{print $3}'`
+			VMSTATE=$(virsh list --all | grep $DOMAIN | awk '{print $3}')
 			if [[ $VMSTATE != "running" ]]; then
 				echo "Skipping $DOMAIN , because its not running." > $LOG
 				exit 1
 			fi
 
 			BACKUPFOLDER=$BACKUPROOT/KVM-BACKUPS/$DOMAIN
-			if ! -d $BACKUPFOLDER ; then
+			if [[ ! -d $BACKUPFOLDER ]] ; then
 				$RTD_GUI
 			fi
-			mkdir -p $BACKUPFOLDER
-			TARGETS=$(virsh domblklist $DOMAIN --details | grep disk | awk '{print $3}')
-			IMAGES=$(virsh domblklist $DOMAIN --details | grep disk | awk '{print $4}')
+			mkdir -p "$BACKUPFOLDER"
+			TARGETS="$(virsh domblklist "$DOMAIN" --details | grep disk | awk '{print $3}')"
+			IMAGES="$(virsh domblklist "$DOMAIN" --details | grep disk | awk '{print $4}')"
 			DISKSPEC=""
 			for TARGET in $TARGETS; do
 				DISKSPEC="$DISKSPEC --diskspec $TARGET,snapshot=external"
 			done
 
-			virsh snapshot-create-as --domain $DOMAIN --name "backup-$DOMAIN" --no-metadata --atomic --disk-only $DISKSPEC >> $LOG
+			virsh snapshot-create-as --domain "$DOMAIN" --name "backup-$DOMAIN" --no-metadata --atomic --disk-only "$DISKSPEC" >> "$LOG"
 			if [ $? -ne 0 ]; then
-				echo "Failed to create snapshot for $DOMAIN" > $LOG
+				echo "Failed to create snapshot for $DOMAIN" > "$LOG"
 				exit 1
 			fi
 
 			for IMAGE in $IMAGES; do
 				NAME=$(basename $IMAGE)
 				if test -f "$BACKUPFOLDER/$NAME"; then
-				echo "Backup exists, merging only changes to image" > $LOG
-				rsync -apvz --inplace $IMAGE $BACKUPFOLDER/$NAME >> $LOG
+				echo "Backup exists, merging only changes to image" > "$LOG"
+				rsync -apvz --inplace "$IMAGE" "$BACKUPFOLDER"/"$NAME" >> "$LOG"
 				else
-				echo "Backup does not exist, creating a full sparse copy" > $LOG
-				rsync -apvz --sparse $IMAGE $BACKUPFOLDER/$NAME >> $LOG
+				echo "Backup does not exist, creating a full sparse copy" > "$LOG"
+				rsync -apvz --sparse "$IMAGE" "$BACKUPFOLDER"/"$NAME" >> "$LOG"
 				fi
 			done
 
-			BACKUPIMAGES=$(virsh domblklist $DOMAIN --details | grep disk | awk '{print $4}')
+			BACKUPIMAGES="$(virsh domblklist "$DOMAIN" --details | grep disk | awk '{print $4}')"
 			for TARGET in $TARGETS; do
-				virsh blockcommit $DOMAIN $TARGET --active --pivot >> $LOG
-				if [ $? -ne 0 ]; then
-					echo "Could not merge changes for disk of $TARGET of $DOMAIN. VM may be in invalid state." > $LOG
+				if virsh blockcommit "$DOMAIN" "$TARGET" --active --pivot >> "$LOG"; then
+					echo "Could not merge changes for disk of $TARGET of $DOMAIN. VM may be in invalid state." > "$LOG"
 					exit 1
 				fi
 			done
@@ -1123,14 +1169,14 @@ backup_running_vm ()
 			for BACKUP in $BACKUPIMAGES; do
 				if [[ $BACKUP == *"backup-"* ]];then
 
-				echo "deleted temporary image $BACKUP" > $LOG
-				rm -f $BACKUP
+				echo "deleted temporary image $BACKUP" > "$LOG"
+				rm -f "$BACKUP"
 				fi
 			done
 
-			virsh dumpxml $DOMAIN > $BACKUPFOLDER/$DOMAIN.xml
-			echo "-----------WORKER END $DOMAIN-----------" >> $LOG
-			echo "Finished backup of $DOMAIN at $(date +'%d-%m-%Y %H:%M:%S')" >> $LOG
+			virsh dumpxml "$DOMAIN" > "$BACKUPFOLDER"/"$DOMAIN".xml
+			echo "-----------WORKER END $DOMAIN-----------" >> "$LOG"
+			echo "Finished backup of $DOMAIN at $(date +'%d-%m-%Y %H:%M:%S')" >> "$LOG"
 		done
 	}
 
@@ -1151,6 +1197,7 @@ backup_running_vm ()
 		fi
 	fi
 }
+
 
 rtd_ppa_checker ()
 {
@@ -1194,7 +1241,7 @@ dl ()
 	# It expects one parameter: the complete URL to download from.
 
 	download_url="$1"
-	fetch_file () { wget -P /opt/rtd/cache $download_url 1>>$_LOGFILE 2>>$_ERRLOGFILE ; }
+	fetch_file () { wget -P /opt/rtd/cache "$download_url" 1>>$_LOGFILE 2>>$_ERRLOGFILE ; }
 
 	echo  "    - getting package $download_url ..."
 	if hash wget >/dev/null ; then
@@ -1204,12 +1251,12 @@ dl ()
 		fetch_file
 	fi
 
-	echo "    - Installing package $download_file ..."
+	echo "    - Installing package $(basename "$download_url") ..."
 	if hash pkcon >/dev/null ; then
-		pkcon install-local -y /opt/rtd/cache/$(basename $download_url) 1>>$_LOGFILE 2>>$_ERRLOGFILE
+		pkcon install-local -y /opt/rtd/cache/"$(basename "$download_url")" 1>>$_LOGFILE 2>>$_ERRLOGFILE
 	else
 		check_dependencies packagekit-tools
-		pkcon install-local -y /opt/rtd/cache/$(basename $download_url) 1>>$_LOGFILE 2>>$_ERRLOGFILE
+		pkcon install-local -y /opt/rtd/cache/"$(basename "$download_url")" 1>>$_LOGFILE 2>>$_ERRLOGFILE
 	fi
 }
 
@@ -1247,7 +1294,7 @@ rtd_oem_find_live_release()
 			fi
 		;;
 		* )
-			$RTD_GUI --backtitle "$BRANDING" --title "ERROR!" --msgbox "You passed the function ${FUNCNAME[0]} the parameters $@. The 4th parameter should be either of: Live | live | current-live | server | netinst | net | mini! Not $live_or_not" 10 60
+			$RTD_GUI --backtitle "$BRANDING" --title "ERROR!" --msgbox "You passed the function ${FUNCNAME[0]} the parameters $*. The 4th parameter should be either of: Live | live | current-live | server | netinst | net | mini! Not $live_or_not" 10 60
 		;;
 		esac
 	;;
@@ -1262,7 +1309,7 @@ rtd_oem_find_live_release()
 				echo "$rel/$(curl --silent $rel/MD5SUMS | \grep -o "debian-.*$desktop_env*.iso")"
 			;;
 			* )
-				$RTD_GUI --backtitle "$BRANDING" --title "ERROR!" --msgbox "You passed the function ${FUNCNAME[0]} the parameters $@. The 4th parameter should be wither of: kde | gnome | xfce | cinnamon | lxde | lxqt | mate | standard! Not $live_or_not " 10 60
+				$RTD_GUI --backtitle "$BRANDING" --title "ERROR!" --msgbox "You passed the function ${FUNCNAME[0]} the parameters $*. The 4th parameter should be wither of: kde | gnome | xfce | cinnamon | lxde | lxqt | mate | standard! Not $live_or_not " 10 60
 			;;
 			esac
 		;;
@@ -1270,12 +1317,12 @@ rtd_oem_find_live_release()
 			# Find and download mini iso...
 		;;
 		* )
-			$RTD_GUI --backtitle "$BRANDING" --title "ERROR!" --msgbox "You passed the function ${FUNCNAME[0]} the parameters $@. The 2nd parameter should be either of: Live | live | current-live | netinst | net | mini ! not $live_or_not" 10 60
+			$RTD_GUI --backtitle "$BRANDING" --title "ERROR!" --msgbox "You passed the function ${FUNCNAME[0]} the parameters $*. The 2nd parameter should be either of: Live | live | current-live | netinst | net | mini ! not $live_or_not" 10 60
 		;;
 		esac
 	;;
 	*)
-		$RTD_GUI --backtitle "$BRANDING" --title "ERROR!" --msgbox "You passed the function ${FUNCNAME[0]} the parameters $@. The 2nd parameter should be either of: Ubuntu | ubuntu Debian | debian! not $distro_flavor" 10 60
+		$RTD_GUI --backtitle "$BRANDING" --title "ERROR!" --msgbox "You passed the function ${FUNCNAME[0]} the parameters $*. The 2nd parameter should be either of: Ubuntu | ubuntu Debian | debian! not $distro_flavor" 10 60
 	;;
 	esac
 }
@@ -2001,6 +2048,41 @@ cleanup_and_finish () {
 }
 
 
+generate_report_disk_space_used_by_directory () {
+	# Function to generate a report for folders' disk space use. 
+	# This function requres one argument; what root folder to analyse the directories in. 
+	# This functio will return a report contained in the variable $return that may then be used.
+	# Example: 
+	# generate_report_disk_space_used_by_directory /home
+	# 
+	# This will generate a report on the disk space per directory in the /home folder.
+	#
+	DIRS=$(ls $1 )
+	store=/$tmp/out.ct
+	$RTD_GUI --backtitle "$BRANDING" --title "Generating report for: $1" --gauge "Calculating disk space: this may take some time" $HEIGHT $WIDTH < <(
+		echo "Storage Utilization Report:" >>$store
+		echo "______________________________" >>$store
+		n=$(ls $1 | wc -l ) 
+		i=0
+		for f in $DIRS
+		do
+			du -cksh $1/$f | grep -v total >>$store
+			PCT=$(( 100*(++i)/n ))
+			cat <<-EOF
+			XXX
+			$PCT
+			Completed calculation for: "$f"...
+			XXX
+			EOF
+			sleep 1
+		done
+	)
+	total=$(echo ----- >>$store && du -cksh $1 |grep total >>$store) | $RTD_GUI --backtitle "$BRANDING" --title "Completing report..." --progressbox "Working..." $HEIGHT $WIDTH 
+	result="$(cat $store )" ; rm $store
+}
+
+
+
 
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #::::::::::::::                                          ::::::::::::::::::::::
@@ -2016,8 +2098,7 @@ BRAND="  $BRANDING		Verson:$RTD_Version : on $HOSTNAME"
 BRANDING=$BRAND
 
 display_result () {
-	$RTD_GUI --backtitle "$BRANDING" --title "$1" \
-	--msgbox --scrolltext "$result" $HEIGHT $WIDTH $LIST_HEIGHT
+	$RTD_GUI --backtitle "$BRANDING" --title "$1" --msgbox "$result" $HEIGHT $WIDTH 
 }
 
 
@@ -2033,8 +2114,8 @@ This script will:
   - Download the latest installation image
   - Patch the installation media with the instructions to auto-install.
   - The instructios will encrypt the hard drive and install, automatically.
-  - The default disk encryption password is: "letmein1234"
-  - The default system login and admin temporary password is: "letmein"
+  - The default disk encryption password is: 'letmein1234'
+  - The default system login and admin temporary password is: 'letmein'
   - The defaults will be dused if you make no other active choices"  $HEIGHT $WIDTH $LIST_HEIGHT
 }
 
@@ -2087,7 +2168,7 @@ rtd_setup_choices_preseed () {
 		 8 "rtd_oem_preseed_cfg_GRUB_Bootloader_Installation" on
 		 9 "rtd_oem_preseed_cfg_Disk_Layout" on
 		 10 "rtd_oem_preseed_cfg_Package_Selection" on
-		 11 "rtd_oem_preseed_cfg_Addon_"${SRVFUNC}"" on
+		 11 "rtd_oem_preseed_cfg_Addon_${SRVFUNC}" on
 		)
 
 		choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
@@ -2119,7 +2200,7 @@ rtd_setup_choices_cli_workstation () {
 	# may be very poor over the internet (as for example with the great firewall of China). In
 	# Such a case it would be usefull to have the good old CLI software! :)
 	# List Options to be available for choice in the RTD System Configurator...
-	cmd=($RTD_GUI --backtitle "$BRANDING" --title "Terminal Software add on Options Menu" --separate-output --checklist "You can be productive in the cli environment. Please Select Software titles below that you want to add to this system:" $HEIGHT $WIDTH $LIST_HEIGHT )
+	cmd=("$RTD_GUI" --backtitle "$BRANDING" --title "Terminal Software add on Options Menu" --separate-output --checklist "You can be productive in the cli environment. Please Select Software titles below that you want to add to this system:" "$HEIGHT" "$WIDTH" "$LIST_HEIGHT" )
 	options=(1 "Base RTD OEM Software (basic admin tools usually needed)" on
 		 2 "Alpine email client" off
 		 3 "Vim text editor" on
@@ -2170,8 +2251,8 @@ show_make_media_gui_server ()
 {
 	while true; do
 		exec 3>&1
-		selection=$($RTD_GUI \
-		--backtitle "$BRANDING" --title "Create Automatic OS Install Media"  --menu "Please select which automatic operating system installation media to create.  (to Burn to CD, or trafer to a USB, or use with a VM):" $HEIGHT $WIDTH $LIST_HEIGHT  \
+		selection=$("$RTD_GUI" \
+		--backtitle "$BRANDING" --title "Create Automatic OS Install Media"  --menu "Please select which automatic operating system installation media to create.  (to Burn to CD, or trafer to a USB, or use with a VM):" "$HEIGHT" "$WIDTH" "$LIST_HEIGHT"  \
 		"1" "Automatic Install ISO for Ubuntu Server" \
 		"2" "Automatic Install ISO for Ubuntu Graphical Server" \
 		"3" "Automatic Install ISO for Debian Graphical Server" \
@@ -2182,8 +2263,8 @@ show_make_media_gui_server ()
 		exec 3>&-
 
 		case $exit_status in
-			$DIALOG_CANCEL) return	;;
-			$DIALOG_ESC) return ;;
+			"$DIALOG_CANCEL") return	;;
+			"$DIALOG_ESC") return ;;
 		esac
 
 		case $selection in
@@ -2226,8 +2307,8 @@ show_make_media_gui_desktop () {
 	# List Options to be available for choice in the RTD System Configurator...
 	while true; do
 		exec 3>&1
-		selection=$($RTD_GUI \
-		--backtitle "$BRANDING" --title "Create Automatic OS Install Media"  --menu "Please select which automatic operating system installation media to create:" $HEIGHT $WIDTH $LIST_HEIGHT  \
+		selection=$("$RTD_GUI" \
+		--backtitle "$BRANDING" --title "Create Automatic OS Install Media"  --menu "Please select which automatic operating system installation media to create:" "$HEIGHT" "$WIDTH" "$LIST_HEIGHT"  \
 		"1" "Automatic Install Media for Ubuntu Standard Desktop (more MAC like)" \
 		"2" "Automatic Install Media for Ubuntu with Plasma Desktop (more Windows like)" \
 		"3" "Automatic Install Media for Ubuntu Gnome (without Ubuntu customization)" \
@@ -2240,8 +2321,8 @@ show_make_media_gui_desktop () {
 		exec 3>&-
 
 		case $exit_status in
-			$DIALOG_CANCEL) return	;;
-			$DIALOG_ESC) return ;;
+			"$DIALOG_CANCEL") return	;;
+			"$DIALOG_ESC") return ;;
 		esac
 
 		case $selection in
@@ -2292,10 +2373,10 @@ show_manage_vm_gui () {
 	# List Options to be available for choice in the RTD System Configurator...
 	while true; do
 		exec 3>&1
-		selection=$($RTD_GUI \
+		selection=$("$RTD_GUI" \
 		--backtitle "$BRANDING" \
 		--title "VM Managment Menu"  \
-		--menu "Please select what you would like to do below:"  $HEIGHT $WIDTH $LIST_HEIGHT \
+		--menu "Please select what you would like to do below:"  "$HEIGHT" "$WIDTH" "$LIST_HEIGHT" \
 		"1" "List all virtual machines on this system" \
 		"2" "Backup all running virtual machines on this server" \
 		"3" "Monitor VM's on this system "\
@@ -2305,8 +2386,8 @@ show_manage_vm_gui () {
 		exec 3>&-
 
 		case $exit_status in
-			$DIALOG_CANCEL) return ;;
-			$DIALOG_ESC) return ;;
+			"$DIALOG_CANCEL") return ;;
+			"$DIALOG_ESC") return ;;
 		esac
 
 		case $selection in
@@ -2340,8 +2421,8 @@ show_manage_vm_gui () {
 				exec 3>&-
 
 				case $exit_status in
-					$DIALOG_CANCEL) return	;;
-					$DIALOG_ESC) return ;;
+					"$DIALOG_CANCEL") return	;;
+					"$DIALOG_ESC") return ;;
 				esac
 
 				case $subselection2 in
@@ -2365,7 +2446,7 @@ show_deploy_server_VM_now_menu ()
 		while true; do
 		exec 3>&1
 		selection=$($RTD_GUI \
-		--backtitle "$BRANDING" --title "Deploy VM Server"  --menu "Please select which type of VM to create:" $HEIGHT $WIDTH $LIST_HEIGHT \
+		--backtitle "$BRANDING" --title "Deploy VM Server"  --menu "Please select which type of VM to create:" "$HEIGHT" "$WIDTH" "$LIST_HEIGHT" \
 		"1" "Ubuntu Server" \
 		"2" "Ubuntu Graphical Server" \
 		"3" "Debian Graphical Server" \
@@ -2376,8 +2457,8 @@ show_deploy_server_VM_now_menu ()
 		exec 3>&-
 
 		case $exit_status in
-			$DIALOG_CANCEL) return	;;
-			$DIALOG_ESC) return ;;
+			"$DIALOG_CANCEL") return	;;
+			"$DIALOG_ESC") return ;;
 		esac
 
 		case $selection in
@@ -2396,17 +2477,17 @@ show_deploy_server_VM_now_menu ()
 			cleanup_and_finish
 		;;
 		3 )
-			make_preseed_cfg $( mktemp -d ) lxde-desktop
+			make_preseed_cfg "$( mktemp -d )" lxde-desktop
 			make_kvm_virtual_machine_now_from_debian_org debian10
 			cleanup_and_finish nomessage
 		;;
 		4 )
-			make_preseed_cfg $( mktemp -d ) openssh-server
+			make_preseed_cfg "$( mktemp -d )" openssh-server
 			make_kvm_virtual_machine_now_from_debian_org debian10
 			cleanup_and_finish nomessage
 		;;
 		5 )
-			make_preseed_cfg $( mktemp -d ) openssh-server MinecraftServer
+			make_preseed_cfg "$( mktemp -d )" openssh-server MinecraftServer
 			make_kvm_virtual_machine_now_from_debian_org debian10
 			cleanup_and_finish nomessage
 		;;
@@ -2420,7 +2501,7 @@ show_deploy_VDI_VM_now_menu ()
 {
 	while true; do
 		exec 3>&1
-		selection=$($RTD_GUI --backtitle "$BRANDING" --title "Deploy Virtual Desktop (VDI)"  --menu "Please select which VDI to create on this server:" $HEIGHT $WIDTH $LIST_HEIGHT \
+		selection=$($RTD_GUI --backtitle "$BRANDING" --title "Deploy Virtual Desktop (VDI)"  --menu "Please select which VDI to create on this server:" "$HEIGHT" "$WIDTH" "$LIST_HEIGHT" \
 		"1" "Ubuntu Standard Desktop (more MAC like)" \
 		"2" "Ubuntu with Plasma Desktop (more Windows like)" \
 		"3" "Ubuntu Gnome (without Ubuntu customization)" \
@@ -2434,8 +2515,8 @@ show_deploy_VDI_VM_now_menu ()
 		exec 3>&-
 
 		case $exit_status in
-			$DIALOG_CANCEL) return	;;
-			$DIALOG_ESC) return ;;
+			"$DIALOG_CANCEL") return	;;
+			"$DIALOG_ESC") return ;;
 		esac
 
 		case $selection in
@@ -2444,50 +2525,46 @@ show_deploy_VDI_VM_now_menu ()
 			echo "Program terminated by user..."
 		;;
 		1 )
-			rtd_oem_ubuntu_auto_install_iso_builder ubuntu-desktop desktop
-			make_kvm_virtual_machine_now_from_iso ubuntu20.04
-			cleanup_and_finish
+			echo "***   Deploying a Ubuntu VDI with Gnome Desktop from ubuntu.com"
+			make_preseed_cfg "$( mktemp -d )" ubuntu-desktop
+			make_kvm_virtual_machine_now_from_ubuntu_com ubuntu20.04 
 		;;
 		2 )
-			rtd_oem_ubuntu_auto_install_iso_builder kubuntu-desktop server
+			clear
+			make_preseed_cfg "$( mktemp -d )" kubuntu-desktop
 			make_kvm_virtual_machine_now_from_iso ubuntu20.04
-			cleanup_and_finish
 		;;
 		3 )
-			rtd_oem_ubuntu_auto_install_iso_builder ubuntu-gnome-desktop server
-			make_kvm_virtual_machine_now_from_iso ubuntu20.04
-			cleanup_and_finish
+			clear
+			make_preseed_cfg "$( mktemp -d )" ubuntu-gnome-desktop 
+			make_kvm_virtual_machine_now_from_ubuntu_com ubuntu20.04
 		;;
                 4 )
-			rtd_oem_ubuntu_auto_install_iso_builder ubuntu-desktop-minimal desktop
-			make_kvm_virtual_machine_now_from_iso ubuntu20.04
-			cleanup_and_finish
+			clear
+			make_preseed_cfg "$( mktemp -d )" ubuntu-desktop-minimal 
+			make_kvm_virtual_machine_now_from_ubuntu_com ubuntu20.04
 		;;
 		5 )
 			clear
-			echo "***   Deploying a Debian VDI with Gnome Desktop from debian.org"
-			make_preseed_cfg $( mktemp -d ) gnome-desktop
+			make_preseed_cfg "$( mktemp -d )" gnome-desktop
 			make_kvm_virtual_machine_now_from_debian_org debian10
 			cleanup_and_finish nomessage
 		;;
 		6 )
 			clear
-			echo "***   Deploying a Debian VDI with Cinnamon Desktop from debian.org"
-			make_preseed_cfg $( mktemp -d ) cinnamon-desktop
+			make_preseed_cfg "$( mktemp -d )" cinnamon-desktop
 			make_kvm_virtual_machine_now_from_debian_org debian10
 			cleanup_and_finish nomessage
 		;;
 		7 )
 			clear
-			echo "***   Deploying a Debian VDI with KDE Desktop from debian.org"
-			make_preseed_cfg $( mktemp -d ) kde-desktop
+			make_preseed_cfg "$( mktemp -d )" kde-desktop
 			make_kvm_virtual_machine_now_from_debian_org debian10
 			cleanup_and_finish nomessage
 		;;
 		8 )
 			clear
-			make_preseed_cfg $( mktemp -d ) lxde-desktop
-			echo "***   Deploying a Debian VDI with $CONFIG from debian.org"
+			make_preseed_cfg "$( mktemp -d )" lxde-desktop
 			make_kvm_virtual_machine_now_from_debian_org debian10
 			cleanup_and_finish nomessage
 		;;
@@ -2500,20 +2577,21 @@ show_deploy_VDI_VM_now_menu ()
 show_view_informaion_about_this_system () {
 	while true; do
 		exec 3>&1
-		selection=$($RTD_GUI --backtitle "$BRANDING" --title "System Information Menu" --menu "" $HEIGHT $WIDTH $LIST_HEIGHT \
+		selection=$($RTD_GUI --backtitle "$BRANDING" --title "System Information Menu" --menu "" "$HEIGHT" "$WIDTH" "$LIST_HEIGHT" \
 		"1" "Show system summary" \
 		"2" "Show storage device space utilization" \
 		"3" "Show users HOME folder storage use" \
-		"4" "Show system temperature information" \
-		"5" "Show detailed system CPU information" \
-		"6" "Show systems physical location (city, county etc.)" \
+		"4" "Show complete storage utilization by directory" \
+		"5" "Show system temperature information" \
+		"6" "Show detailed system CPU information" \
+		"7" "Show systems physical location (city, county etc.)" \
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
 
 		case $exit_status in
-			$DIALOG_CANCEL) return	;;
-			$DIALOG_ESC) return ;;
+			"$DIALOG_CANCEL") return	;;
+			"$DIALOG_ESC") return ;;
 		esac
 
 		case $selection in
@@ -2533,29 +2611,33 @@ show_view_informaion_about_this_system () {
 			clear
 			echo "Please wait while I calculate disk space... "
 			result=$(df -h -x squashfs -x tmpfs)
-			$RTD_GUI --backtitle "$BRANDING" --title "System Sorage Space" --msgbox --scrolltext "$result" 20 100
+			$RTD_GUI --backtitle "$BRANDING" --title "System Storage Space" --msgbox "$result" 20 100
 		;;
 		3 )
 			clear
-			echo "Please wait while I calculate disk space... "
-			result=$(du -sh /home/* 2> /dev/null)
+			generate_report_disk_space_used_by_directory /home
 			display_result "Home Space Utilization (All Users)"
 		;;
 		4 )
+			clear
+			generate_report_disk_space_used_by_directory /
+			display_result "Total Space Utilization root directory:"
+		;;
+		5 )
 			check_dependencies lm-sensors
 			sudo /etc/init.d/kmod start
 			check_dependencies hddtemp
 			sudo sensors-detect --auto
 			clear
-			result=$(sudo hddtemp /dev/sda; sensors )
+			result=$( sensors )
 			display_result "System Temperature Information"
 		;;
-		5 )
+		6 )
 			clear
 			result=$(lscpu)
 			display_result "System CPU Information"
 		;;
-		6 )
+		7 )
 			clear
 			check_dependencies curl &>/dev/null
 			check_dependencies dnsutils &>/dev/null
@@ -2593,21 +2675,33 @@ show_manage_software_gui () {
 		;;
 		1 )
 			clear
-			rtd_update_system
-			read -p "Press [Enter] key to return to the main menu: "
+			rtd_update_system ; rtd_oem_pause 1
 		;;
 		2 )
-			clear
-			rtd_ppa_checker
-			read -p "Press [Enter] key to let me know when you are done reading."
+			clear ; dist_info="$(hostnamectl)"
+			if echo $dist_info |grep ".*buntu" &>/dev/null ; then
+				result="$(rtd_ppa_checker)"
+				display_result "Packages Installed from Personal Package Archives"
+			elif echo $dist_info |grep "Pop!_OS" 2>/dev/null ; then
+				result="$(rtd_ppa_checker)"
+				display_result "Packages Installed from Personal Package Archives"
+			else
+				result="Non Ubuntu based distributions do not Support the use of Personal Package Archives \n Press [ OK ] to return to the prevous menu."
+				display_result "Functionality Not Supported"
+			fi
 		;;
 		3 )
-			clear
-			rtd_ppa_checker --delete
-			read -p "Press [Enter] key to let me know when you are done reading."
+			clear ; dist_info="$(hostnamectl)"
+			if echo $dist_info |grep ".*buntu" &>/dev/null ; then
+				rtd_ppa_checker --delete | $RTD_GUI --programbox "Personal Package Archive Check:" $HEIGHT $WIDTH
+			elif echo $dist_info |grep "Pop!_OS" 2>/dev/null ; then
+				rtd_ppa_checker --delete | $RTD_GUI --programbox "Personal Package Archive Check:" $HEIGHT $WIDTH
+			else
+				result="Non Ubuntu based distributions do not Support the use of Personal Package Archives \n Press [ OK ] to return to the prevous menu."
+				display_result "Functionality Not Supported"
+			fi
 		;;
 		4 )
-			clear
 			rtd_oem_release_upgrade
 		;;
 		5 )
@@ -2836,11 +2930,11 @@ if [[ "$TERM" == screen* ]]; then
 
 else
 	if hash byobu 2>/dev/null; then
-		byobu new-session -s "RTD Simple Server Support Tools" "$0 $@"
+		byobu new-session -s "RTD Simple Server Support Tools" "$0 $*"
 		#clear
 	else
-		check_dependencies byobu && echo -e $RED "A critical component needed for this script to work properly was attempted to be added... Attempting to run the script again!" $ENDCOLOR
-		su -c "$0 $@" $SUDO_USER
+		check_dependencies byobu && echo -e "$RED" "A critical component needed for this script to work properly was attempted to be added... Attempting to run the script again!" "$ENDCOLOR"
+		su -c "$0 $*" "$SUDO_USER"
 		clear
 	fi
 fi
