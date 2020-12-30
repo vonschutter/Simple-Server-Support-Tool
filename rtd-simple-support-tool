@@ -2379,7 +2379,7 @@ show_manage_vm_gui () {
 		--menu "Please select what you would like to do below:"  "$HEIGHT" "$WIDTH" "$LIST_HEIGHT" \
 		"1" "List all virtual machines on this system" \
 		"2" "Backup all running virtual machines on this server" \
-		"3" "Monitor VM's on this system "\
+		"3" "Monitor VM's on this system" \
 		"4" "Deploy a VM on this server" \
 		2>&1 1>&3 )
 		exit_status=$?
