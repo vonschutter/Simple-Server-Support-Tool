@@ -2157,7 +2157,7 @@ rtd_setup_choices_preseed () {
 	echo "Writing installation instructions for [$CONFIG] in $SAVETO/$PRESEED"
 	touch "$1/$PRESEED"
 
-	cmd=("$RTD_GUI" --backtitle "$BRANDING" --title "VM Auto Answer Setup Questions" --separate-output --checklist "Please preconfiguration components below. You will be prompted to manually add information for sections that you de-select:" "$HEIGHT" "$WIDTH" "$LIST_HEIGHT" )
+	cmd=($RTD_GUI --backtitle "$BRANDING" --title "VM Auto Answer Setup Questions" --separate-output --checklist "Please preconfiguration components below. You will be prompted to manually add information for sections that you de-select:" "$HEIGHT" "$WIDTH" "$LIST_HEIGHT" )
 	options=(1 "rtd_oem_preseed_ubuntu_cfg_KS_CFG_Options" on
 		 2 "rtd_oem_preseed_cfg_Unattended_Install" on
 		 3 "rtd_oem_preseed_cfg_Network_Configuration" on
@@ -2200,7 +2200,7 @@ rtd_setup_choices_cli_workstation () {
 	# may be very poor over the internet (as for example with the great firewall of China). In
 	# Such a case it would be usefull to have the good old CLI software! :)
 	# List Options to be available for choice in the RTD System Configurator...
-	cmd=("$RTD_GUI" --backtitle "$BRANDING" --title "Terminal Software add on Options Menu" --separate-output --checklist "You can be productive in the cli environment. Please Select Software titles below that you want to add to this system:" "$HEIGHT" "$WIDTH" "$LIST_HEIGHT" )
+	cmd=($RTD_GUI --backtitle "$BRANDING" --title "Terminal Software add on Options Menu" --separate-output --checklist "You can be productive in the cli environment. Please Select Software titles below that you want to add to this system:" "$HEIGHT" "$WIDTH" "$LIST_HEIGHT" )
 	options=(1 "Base RTD OEM Software (basic admin tools usually needed)" on
 		 2 "Alpine email client" off
 		 3 "Vim text editor" on
@@ -2251,7 +2251,7 @@ show_make_media_gui_server ()
 {
 	while true; do
 		exec 3>&1
-		selection=$("$RTD_GUI" \
+		selection=$($RTD_GUI \
 		--backtitle "$BRANDING" --title "Create Automatic OS Install Media"  --menu "Please select which automatic operating system installation media to create.  (to Burn to CD, or trafer to a USB, or use with a VM):" "$HEIGHT" "$WIDTH" "$LIST_HEIGHT"  \
 		"1" "Automatic Install ISO for Ubuntu Server" \
 		"2" "Automatic Install ISO for Ubuntu Graphical Server" \
@@ -2307,7 +2307,7 @@ show_make_media_gui_desktop () {
 	# List Options to be available for choice in the RTD System Configurator...
 	while true; do
 		exec 3>&1
-		selection=$("$RTD_GUI" \
+		selection=$($RTD_GUI \
 		--backtitle "$BRANDING" --title "Create Automatic OS Install Media"  --menu "Please select which automatic operating system installation media to create:" "$HEIGHT" "$WIDTH" "$LIST_HEIGHT"  \
 		"1" "Automatic Install Media for Ubuntu Standard Desktop (more MAC like)" \
 		"2" "Automatic Install Media for Ubuntu with Plasma Desktop (more Windows like)" \
@@ -2373,7 +2373,7 @@ show_manage_vm_gui () {
 	# List Options to be available for choice in the RTD System Configurator...
 	while true; do
 		exec 3>&1
-		selection=$("$RTD_GUI" \
+		selection=$($RTD_GUI \
 		--backtitle "$BRANDING" \
 		--title "VM Managment Menu"  \
 		--menu "Please select what you would like to do below:"  "$HEIGHT" "$WIDTH" "$LIST_HEIGHT" \
