@@ -604,7 +604,7 @@ show_deploy_server_VM_now_menu ()
 		clear
 
 		case $exit_status in
-			"$DIALOG_CANCEL") return	;;
+			"$DIALOG_CANCEL") return ;;
 			"$DIALOG_ESC") return ;;
 		esac
 
@@ -895,7 +895,7 @@ show_main_menu () {
 				clear
 
 				case $exit_status in
-					$DIALOG_CANCEL) return ;;
+					$DIALOG_CANCEL) show_main_menu ;;
 					$DIALOG_ESC) return ;;
 				esac
 	
