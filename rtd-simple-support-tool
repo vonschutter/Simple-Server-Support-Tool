@@ -633,9 +633,9 @@ show_deploy_VDI_VM_now_menu ()
 		exec 3>&1
 		selection=$($RTD_GUI --backtitle "$BRANDING" --title "Deploy Virtual Desktop (VDI)"  --menu "Please select which VDI to create on this server:" "$HEIGHT" "$WIDTH" "$LIST_HEIGHT" \
 		"1" "Ubuntu Standard Desktop (more MAC like)" \
-		"2" "Ubuntu with Plasma Desktop (more Windows like)" \
-		"3" "Ubuntu Gnome (without Ubuntu customization)" \
-                "4" "Ubuntu Minimal Standard desktop" \
+		"2" "Kubuntu Desktop (more Windows like)" \
+		"3" "Lubuntu Desktop" \
+                "4" "Xubuntu (light weight) desktop" \
 		"5" "Debian Default Desktop" \
 		"6" "Debian Cinnamon Desktop" \
 		"7" "Debian Plasma Desktop" \
@@ -658,18 +658,18 @@ show_deploy_VDI_VM_now_menu ()
 		1 )
 			echo "***   Deploying a Ubuntu VDI with Gnome Desktop from ubuntu.com"
 			make_preseed_cfg "$( mktemp -d )" ubuntu-desktop
-			make_kvm_virtual_machine_now_from_ubuntu_com ubuntu20.04.1
+			make_kvm_virtual_machine_now_from_ubuntu_com ubuntu20.04
 		;;
 		2 )
 			make_preseed_cfg "$( mktemp -d )" kubuntu-desktop
-			make_kvm_virtual_machine_now_from_iso ubuntu20.04
+			make_kvm_virtual_machine_now_from_ubuntu_com ubuntu20.04
 		;;
 		3 )
-			make_preseed_cfg "$( mktemp -d )" ubuntu-gnome-desktop 
+			make_preseed_cfg "$( mktemp -d )" lubuntu-desktop 
 			make_kvm_virtual_machine_now_from_ubuntu_com ubuntu20.04
 		;;
                 4 )
-			make_preseed_cfg "$( mktemp -d )" ubuntu-desktop-minimal 
+			make_preseed_cfg "$( mktemp -d )" xubuntu-desktop
 			make_kvm_virtual_machine_now_from_ubuntu_com ubuntu20.04
 		;;
 		5 )
